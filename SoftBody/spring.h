@@ -10,11 +10,13 @@ public:
 	float aL;
 
 	int iM1; //Index positions of connected mass points
+	int jM1;
 	int iM2;
+	int jM2;
 
 	sf::RectangleShape self;
 
 	spring();
-	spring(int m1, int m2, sf::Vector2f pos, float d, float sc, float anchor);
+	spring(int im1, int jm1, int im2, int jm2, sf::Vector2f pos, float d, float sc, float anchor);
 
 };
