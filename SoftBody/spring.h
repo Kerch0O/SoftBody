@@ -19,4 +19,6 @@ public:
 	spring();
 	spring(int im1, int jm1, int im2, int jm2, sf::Vector2f pos, float d, float sc, float anchor);
 
+	void rectRefresh(std::vector<std::vector<massPoint>> m);
+
 };

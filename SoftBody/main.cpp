@@ -1,12 +1,23 @@
 #include "functions.h"
 
+void testClick(std::vector<std::vector<massPoint>>& m, sf::RenderWindow& window) {
+	sf::Vector2f mP = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+	for (int i = 0; i < m.size(); i++) {
+		for (int j = 0; j < m[i].size(); j++) {
+			if (pythag(mP - m[i][j].self.getPosition()) <= m[i][j].self.getRadius()) {
+				std::cout << "Mouse hit and clicked: " << i << " " << j << std::endl;
+			}
+		}
+	}
+}
+
 
 int main() {
 
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "Soft Bodies", sf::Style::Default);
 
-	int w = 5;
-	int h = 5;
+	int w = 10;
+	int h = 6;
 	int N = w * h;
 
 	float damping = 0.99f;
@@ -29,37 +40,9 @@ int main() {
 		currPos.y += anchorLength;
 	}
 
-	if (w >= 3 && h >= 3) {
-		for (int i = 1; i < h - 1; i++) {
-			for (int j = 1; j < w - 1; j++) {
-				//Create spring in each direction straight and diagonal
-				//8 total
-
-				//Top Left
-				springs.push_back(spring(i - 1, j - 1, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Top Middle
-				springs.push_back(spring(i - 1, j, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Top Right
-				springs.push_back(spring(i - 1, j + 1, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Middle Left
-				springs.push_back(spring(i, j - 1, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Middle Right
-				springs.push_back(spring(i, j + 1, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Bottom Left
-				springs.push_back(spring(i + 1, j - 1, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Bottom Middle
-				springs.push_back(spring(i + 1, j, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-				//Bottom Right
-				springs.push_back(spring(i + 1, j + 1, i, j, massPoints[i][j].self.getPosition(), damping, springConstant, anchorLength));
-			}
-		}
-	}
-	else {
-		std::cout << "Width and height parameters not allowed" << std::endl;
-		window.close();
-	}
-
-
+	
+	initialiseSprings(massPoints, springs, damping, springConstant, anchorLength);
+		
 	while (window.isOpen()) {
 		sf::Event evnt;
 		while (window.pollEvent(evnt)) {
@@ -67,10 +50,17 @@ int main() {
 			case sf::Event::Closed:
 				window.close();
 				break;
+			case sf::Event::MouseButtonPressed:
+				testClick(massPoints, window);
 			}
 		}
 
+		step(springs, massPoints);
+
+
 		window.clear(sf::Color::White);
+
+		for (auto x : springs)window.draw(x.self);
 
 		for (auto& x : massPoints) {
 			for (auto& y : x)window.draw(y.self);

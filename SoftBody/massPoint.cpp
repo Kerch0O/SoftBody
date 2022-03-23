@@ -7,5 +7,5 @@ massPoint::massPoint(float mass, float gravity, sf::Vector2f pos)
 	self.setRadius(5.0f);
 	self.setOrigin(5.0f, 5.0f);
 	self.setPosition(pos);
-	self.setFillColor(sf::Color(0, 0, 0, 255));
+	self.setFillColor(sf::Color(255, 0, 0, 255));
 }
