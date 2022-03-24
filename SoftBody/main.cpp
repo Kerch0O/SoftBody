@@ -1,14 +1,16 @@
 #include "functions.h"
 
-void testClick(std::vector<std::vector<massPoint>>& m, sf::RenderWindow& window) {
+sf::Vector2i testClick(std::vector<std::vector<massPoint>>& m, sf::RenderWindow& window) {
 	sf::Vector2f mP = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
 	for (int i = 0; i < m.size(); i++) {
 		for (int j = 0; j < m[i].size(); j++) {
 			if (pythag(mP - m[i][j].self.getPosition()) <= m[i][j].self.getRadius()) {
-				std::cout << "Mouse hit and clicked: " << i << " " << j << std::endl;
+				return sf::Vector2i(i, j);
 			}
 		}
 	}
+
+	return sf::Vector2i(-1, -1);
 }
 
 
@@ -20,14 +22,17 @@ int main() {
 	int h = 6;
 	int N = w * h;
 
-	float damping = 0.99f;
-	float springConstant = 0.001f;
-	float anchorLength = 50.0f;
+	float damping = 0.98f;
+	float springConstant = 0.01f;
+	float anchorLength = 20.0f;
 
 	sf::Vector2f currPos(300.0f, 300.0f);
 
 	std::vector<std::vector<massPoint>> massPoints;
 	std::vector<spring> springs;
+
+	sf::Vector2i currClicked(-1, -1);
+	bool clicking = false;
 
 	for (int i = 0; i < h; i++) {
 		massPoints.push_back(std::vector<massPoint>());
@@ -51,10 +56,20 @@ int main() {
 				window.close();
 				break;
 			case sf::Event::MouseButtonPressed:
-				testClick(massPoints, window);
+				clicking = true;
+				currClicked = testClick(massPoints, window);
+				break;
+			case sf::Event::MouseButtonReleased:
+				clicking = false;
+				currClicked = sf::Vector2i(-1, -1);
+				break;
 			}
 		}
 
+		if (clicking && currClicked.x != -1) {
+			massPoints[currClicked.x][currClicked.y].self.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
+		}
+	
 		step(springs, massPoints);
 
 

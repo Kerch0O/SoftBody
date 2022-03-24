@@ -5,12 +5,11 @@ class spring;
 
 class massPoint {
 public:
-	float m;
-	float g;
+	float m, g;
+	sf::Vector2f velocity;
 
 	sf::CircleShape self;
 
-	std::vector<spring> springs;
 
 	massPoint();
 
