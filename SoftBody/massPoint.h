@@ -5,14 +5,14 @@ class spring;
 
 class massPoint {
 public:
-	float m, g;
+	float m, g, r;
 	sf::Vector2f velocity;
 
 	sf::CircleShape self;
-
+	
 
 	massPoint();
 
-	massPoint(float mass, float gravity, sf::Vector2f pos);
-
+	massPoint(float mass, float gravity, float radius, sf::Vector2f pos);
+	void selfColPush(std::vector<std::vector<massPoint>>& m, sf::Vector2i curr);
 };

@@ -15,6 +15,12 @@ void convAngle360(sf::Vector2f d, float& theta);
 void step(std::vector<spring> &s, std::vector<std::vector<massPoint>> &m);
 void rectStep(std::vector<spring> &s, std::vector<std::vector<massPoint>> &m);
 void physicsStep(std::vector<spring> &s, std::vector<std::vector<massPoint>> &m);
+void pushStep(std::vector<std::vector<massPoint>>& m);
 void initialiseSprings(std::vector<std::vector<massPoint>>& m, std::vector<spring>& s, float d, float k, float a);
 void createPartition(std::vector<std::vector<massPoint>>& m, std::vector<spring>& s, int i, int j, float d, float k, float a);
+bool circleCollision(sf::Vector2f p1, sf::Vector2f p2, float r);
+void pushNormalR(massPoint& m1, massPoint& m2);
+float dot(sf::Vector2f v1, sf::Vector2f v2);
+bool bounds(int i, int N);
+float MAX(float a, float b);
 

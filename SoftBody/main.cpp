@@ -18,13 +18,14 @@ int main() {
 
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "Soft Bodies", sf::Style::Default);
 
-	int w = 10;
-	int h = 6;
+	int w = 5;
+	int h = 3;
 	int N = w * h;
 
 	float damping = 0.98f;
-	float springConstant = 0.01f;
+	float springConstant = 0.001f;
 	float anchorLength = 20.0f;
+	float pointRadius = 10.0f;
 
 	sf::Vector2f currPos(300.0f, 300.0f);
 
@@ -34,16 +35,31 @@ int main() {
 	sf::Vector2i currClicked(-1, -1);
 	bool clicking = false;
 
+	//FPS Counter
+	sf::Text fps;
+	fps.setCharacterSize(25);
+	fps.setFillColor(sf::Color::Red);
+	
+	sf::Font calibri;
+	calibri.loadFromFile("calibri.ttf");
+	fps.setFont(calibri);
+	fps.setString("");
+
+	//Delta Time
+	sf::Clock delta;
+
+
 	for (int i = 0; i < h; i++) {
 		massPoints.push_back(std::vector<massPoint>());
 		for (int j = 0; j < w; j++) {
-			massPoints[i].push_back(massPoint(1.0f, 0.01f, currPos));
+			massPoints[i].push_back(massPoint(1.0f, 0.01f, pointRadius, currPos));
 			currPos.x += anchorLength;
 		}
 
 		currPos.x = 300.0f;
 		currPos.y += anchorLength;
 	}
+
 
 	
 	initialiseSprings(massPoints, springs, damping, springConstant, anchorLength);
@@ -63,8 +79,18 @@ int main() {
 				clicking = false;
 				currClicked = sf::Vector2i(-1, -1);
 				break;
+			case sf::Event::TextEntered:
+				if (evnt.text.unicode == 's') {
+					step(springs, massPoints);
+				}
+				break;
 			}
 		}
+
+		float deltaTime = delta.getElapsedTime().asSeconds();
+		delta.restart();
+		fps.setString(std::to_string(1.0f / deltaTime));
+
 
 		if (clicking && currClicked.x != -1) {
 			massPoints[currClicked.x][currClicked.y].self.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
@@ -81,7 +107,10 @@ int main() {
 			for (auto& y : x)window.draw(y.self);
 		}
 
+		window.draw(fps);
+
 		window.display();
+
 	}
 
 	return 0;
