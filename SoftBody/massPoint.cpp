@@ -1,6 +1,7 @@
 #include "functions.h"
 
 
+
 massPoint::massPoint(float mass, float gravity, float radius, sf::Vector2f pos)
 	: m(mass), g(gravity), r(radius), velocity(sf::Vector2f(0.0f, 0.0f))
 {
@@ -10,7 +11,7 @@ massPoint::massPoint(float mass, float gravity, float radius, sf::Vector2f pos)
 	self.setFillColor(sf::Color(255, 0, 0, 255));
 }
 
-void massPoint::selfColPush(std::vector<std::vector<massPoint>>& m, sf::Vector2i curr) {
+void massPoint::selfColPush(std::vector<std::vector<massPoint>>& m, sf::Vector2i curr, std::vector<std::tuple<massPoint*, sf::Vector2f, sf::Vector2f>> &reflections) {
 	//This stops the structure from collapsing in on itself
 	//It collapses when the force of a string pulls a massPoint through another massPoint, making them sit inside of eachover
 	//This removes the error py pushing out any colliding points
@@ -24,7 +25,7 @@ void massPoint::selfColPush(std::vector<std::vector<massPoint>>& m, sf::Vector2i
 	for (int i = 0; i < m.size(); i++) {
 		for (int j = 0; j < m[i].size(); j++) {
 			if (sf::Vector2i(i, j) != curr) {
-				pushNormalR(m[curr.x][curr.y], m[i][j]);
+				pushNormalR(m[curr.x][curr.y], m[i][j], reflections);
 			}
 		}
 	}

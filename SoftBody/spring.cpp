@@ -25,7 +25,7 @@ void spring::rectRefresh(std::vector<std::vector<massPoint>> m) {
 	self.setRotation(theta);
 }
 
-void spring::physics(std::vector<std::vector<massPoint>>& m) {
+void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 	//Account for both the forces on each mass point as the two reverse forces along the string
 	//First calculate seperately
 	//Try just reversing one of them after
@@ -57,16 +57,19 @@ void spring::physics(std::vector<std::vector<massPoint>>& m) {
 	//Negative means going towards p1
 
 	//First point:
-	float FW = p1.m * p1.g; //W = mg
 	//F = ma, a = F/m
 	sf::Vector2f acceleration = (sf::Vector2f(F1.x, F1.y)) / p1.m;
-	p1.velocity += acceleration;
+	p1.velocity += acceleration * dt;
 	p1.velocity *= damping;
-	p1.self.move(p1.velocity);
+	p1.velocity.y += p1.g * dt;
+	p1.self.move(p1.velocity * dt);
+
+	
 
 	//Second point
 	acceleration = (sf::Vector2f(-F1.x, -F1.y)) / p2.m;
-	p2.velocity += acceleration;
+	p2.velocity += acceleration * dt;
 	p2.velocity *= damping;
-	p2.self.move(p2.velocity);
+	p2.velocity.y += p2.g * dt;
+	p2.self.move(p2.velocity * dt);
 }

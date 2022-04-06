@@ -17,15 +17,17 @@ sf::Vector2i testClick(std::vector<std::vector<massPoint>>& m, sf::RenderWindow&
 int main() {
 
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "Soft Bodies", sf::Style::Default);
+//	window.setFramerateLimit(60);
+//	window.setVerticalSyncEnabled(false);
 
 	int w = 5;
 	int h = 3;
 	int N = w * h;
 
 	float damping = 0.98f;
-	float springConstant = 0.001f;
+	float springConstant = 2000.0f;
 	float anchorLength = 20.0f;
-	float pointRadius = 10.0f;
+	float pointRadius = 6.67;
 
 	sf::Vector2f currPos(300.0f, 300.0f);
 
@@ -45,14 +47,11 @@ int main() {
 	fps.setFont(calibri);
 	fps.setString("");
 
-	//Delta Time
-	sf::Clock delta;
-
 
 	for (int i = 0; i < h; i++) {
 		massPoints.push_back(std::vector<massPoint>());
 		for (int j = 0; j < w; j++) {
-			massPoints[i].push_back(massPoint(1.0f, 0.01f, pointRadius, currPos));
+			massPoints[i].push_back(massPoint(1.0f, 700.0f, pointRadius, currPos));
 			currPos.x += anchorLength;
 		}
 
@@ -63,7 +62,15 @@ int main() {
 
 	
 	initialiseSprings(massPoints, springs, damping, springConstant, anchorLength);
+
+	std::vector<Obstacle> objects;
+//	objects.push_back(Obstacle(sf::Vector2f(275.0f, 600.0f), sf::Vector2f(75.0f, 200.0f), 330.0f));
 		
+	//Delta Time
+
+	sf::Clock fpsClock;
+	float deltaTime = 1.0f / 60.0f;
+
 	while (window.isOpen()) {
 		sf::Event evnt;
 		while (window.pollEvent(evnt)) {
@@ -81,22 +88,30 @@ int main() {
 				break;
 			case sf::Event::TextEntered:
 				if (evnt.text.unicode == 's') {
-					step(springs, massPoints);
+				//	step(springs, massPoints, objects, delta);
 				}
 				break;
 			}
 		}
 
-		float deltaTime = delta.getElapsedTime().asSeconds();
-		delta.restart();
-		fps.setString(std::to_string(1.0f / deltaTime));
+		float deltaClockT = fpsClock.getElapsedTime().asSeconds();
+		if (deltaClockT >= 0.007f) {
+			deltaTime = 0.007f;
+		}
+		else {
+			deltaTime = deltaClockT;
+		}
+		fpsClock.restart();
+		fps.setString(std::to_string(1.0f / deltaClockT));
 
 
 		if (clicking && currClicked.x != -1) {
 			massPoints[currClicked.x][currClicked.y].self.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
 		}
+		
+		step(springs, massPoints, objects, deltaTime);
+		
 	
-		step(springs, massPoints);
 
 
 		window.clear(sf::Color::White);
@@ -108,6 +123,8 @@ int main() {
 		}
 
 		window.draw(fps);
+
+		for (auto& x : objects)x.draw(window);
 
 		window.display();
 

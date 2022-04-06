@@ -14,5 +14,5 @@ public:
 	massPoint();
 
 	massPoint(float mass, float gravity, float radius, sf::Vector2f pos);
-	void selfColPush(std::vector<std::vector<massPoint>>& m, sf::Vector2i curr);
+	void selfColPush(std::vector<std::vector<massPoint>>& m, sf::Vector2i curr, std::vector<std::tuple<massPoint*, sf::Vector2f, sf::Vector2f>> &reflections);
 };

@@ -16,6 +16,6 @@ public:
 	spring(massPoint &p11, massPoint &p21, sf::Vector2f pos, float d, float sc, float anchor);
 
 	void rectRefresh(std::vector<std::vector<massPoint>> m);
-	void physics(std::vector<std::vector<massPoint>>& m);
+	void physics(std::vector<std::vector<massPoint>>& m, float dt);
 
 };

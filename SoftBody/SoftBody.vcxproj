@@ -145,11 +145,13 @@
     <ClCompile Include="functions.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="massPoint.cpp" />
+    <ClCompile Include="Obstacle.cpp" />
     <ClCompile Include="spring.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="functions.h" />
     <ClInclude Include="massPoint.h" />
+    <ClInclude Include="Obstacle.h" />
     <ClInclude Include="spring.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
