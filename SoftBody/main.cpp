@@ -17,19 +17,19 @@ sf::Vector2i testClick(std::vector<std::vector<massPoint>>& m, sf::RenderWindow&
 int main() {
 
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "Soft Bodies", sf::Style::Default);
-//	window.setFramerateLimit(60);
-//	window.setVerticalSyncEnabled(false);
 
 	int w = 5;
 	int h = 3;
 	int N = w * h;
 
-	float damping = 0.98f;
-	float springConstant = 2000.0f;
+	float damping = 10.0f;
+	float springConstant = 1000.0f;
 	float anchorLength = 20.0f;
 	float pointRadius = 6.67;
+	float g = 50.0f;
+	float pointMass = 1.0f;
 
-	sf::Vector2f currPos(300.0f, 300.0f);
+	sf::Vector2f currPos(300.0f, 100.0f);
 
 	std::vector<std::vector<massPoint>> massPoints;
 	std::vector<spring> springs;
@@ -51,7 +51,7 @@ int main() {
 	for (int i = 0; i < h; i++) {
 		massPoints.push_back(std::vector<massPoint>());
 		for (int j = 0; j < w; j++) {
-			massPoints[i].push_back(massPoint(1.0f, 700.0f, pointRadius, currPos));
+			massPoints[i].push_back(massPoint(pointMass, g, pointRadius, currPos));
 			currPos.x += anchorLength;
 		}
 
@@ -64,7 +64,8 @@ int main() {
 	initialiseSprings(massPoints, springs, damping, springConstant, anchorLength);
 
 	std::vector<Obstacle> objects;
-//	objects.push_back(Obstacle(sf::Vector2f(275.0f, 600.0f), sf::Vector2f(75.0f, 200.0f), 330.0f));
+	objects.push_back(Obstacle(sf::Vector2f(275.0f, 400.0f), sf::Vector2f(75.0f, 200.0f), 330.0f));
+	objects.push_back(Obstacle(sf::Vector2f(450.0f, 600.0f), sf::Vector2f(75.0f, 200.0f), 30.0f));
 		
 	//Delta Time
 

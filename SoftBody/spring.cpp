@@ -31,7 +31,8 @@ void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 	//Try just reversing one of them after
 
 	//Account for gravity
-	//Use euler integration
+	//Use semi-implicit euler integration, similar to verlet in stability, and the accuracy from Runge-Kutta with any order is not needed, so 
+	//the simple SI-euler is best
 
 	sf::Vector2f d = p2.self.getPosition() - p1.self.getPosition();
 	//Make absolute
@@ -41,7 +42,7 @@ void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 	float zeta = atan(d.x / d.y);
 	float l = pythag(d);
 
-	float Fs = -k * (l - aL);
+	float Fs = -k * (l - aL); //Hooke's law
 
 	sf::Vector2f a(1.0f, 1.0f);
 	if (p2.self.getPosition().x > p1.self.getPosition().x) {
@@ -56,11 +57,22 @@ void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 
 	//Negative means going towards p1
 
+	//Handle damping force
+	//Damping force is relevant to the velocities of the two points attatched
+	//Negative when they are moving away
+	//Positive when moving towards
+	//So we use the dot product
+	sf::Vector2f normalisedDistance = p2.self.getPosition() - p1.self.getPosition();
+	normalisedDistance /= pythag(normalisedDistance);//Normalise
+	float Fd = dot(normalisedDistance, p2.velocity - p1.velocity) * damping;
+
+	F1 += Fd * normalisedDistance; //Apply force
+
+
 	//First point:
 	//F = ma, a = F/m
 	sf::Vector2f acceleration = (sf::Vector2f(F1.x, F1.y)) / p1.m;
 	p1.velocity += acceleration * dt;
-	p1.velocity *= damping;
 	p1.velocity.y += p1.g * dt;
 	p1.self.move(p1.velocity * dt);
 
@@ -69,7 +81,6 @@ void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 	//Second point
 	acceleration = (sf::Vector2f(-F1.x, -F1.y)) / p2.m;
 	p2.velocity += acceleration * dt;
-	p2.velocity *= damping;
 	p2.velocity.y += p2.g * dt;
 	p2.self.move(p2.velocity * dt);
 }

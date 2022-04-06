@@ -36,18 +36,6 @@ void physicsStep(std::vector<spring>& s, std::vector<std::vector<massPoint>>& m,
 void collisionStep(std::vector<std::vector<massPoint>>& m, std::vector<Obstacle> &obstacles) {
 	
 	
-	
-
-	/*
-	for (int i = 0; i < m.size(); i++) {
-		if (m.size() % 2 == 0) {
-			for (int j = 0; j < m[i].size(); j++) {
-				
-			}
-		}
-	}
-	*/
-
 	//Store reflections until after to actually reflect them
 
 	std::vector<std::tuple<massPoint*, sf::Vector2f, sf::Vector2f>> reflections;
@@ -115,6 +103,7 @@ void pushNormalR(massPoint& m1, massPoint& m2, std::vector<std::tuple<massPoint*
 		//Get normalised normal
 
 		sf::Vector2f n = m2.self.getPosition() - m1.self.getPosition();
+	//	n /= pythag(n); For some reason normalising like this does not work so i will not do it
 		float angle = atan(n.y / n.x);
 		n = sf::Vector2f(cos(angle), sin(angle));
 
@@ -126,7 +115,7 @@ void pushNormalR(massPoint& m1, massPoint& m2, std::vector<std::tuple<massPoint*
 		//Get reflection velocity
 		
 		sf::Vector2f v = m1.velocity - 2.0f * (dot(m1.velocity, n) / pow(pythag(n), 2)) * n;
-		v *= 0.5f;
+	//	v *= 0.5f;
 
 		//Push circle out
 
@@ -218,7 +207,7 @@ bool obstaclePointIntersect(Obstacle& o, massPoint& m, sf::Vector2f& closest) {
 		}
 	}
 
-	return intersections % 2 != 0;//If the intersections are even, the point is outside, if odd, inside(this theory works in all situations, even with ones with holes)
+	return intersections == 1;//If the intersections are even, the point is outside, if odd, inside(this theory works in all situations, even with ones with holes), this is set to 1 because there are only quadrilaterals in this
 }
 
 
