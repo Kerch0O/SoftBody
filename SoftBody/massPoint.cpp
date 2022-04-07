@@ -8,6 +8,8 @@ massPoint::massPoint(float mass, float gravity, float radius, sf::Vector2f pos)
 	self.setRadius(radius);
 	self.setOrigin(radius, radius);
 	self.setPosition(pos);
+	self.setOutlineColor(sf::Color::Black);
+	self.setOutlineThickness(1);
 	self.setFillColor(sf::Color(255, 0, 0, 255));
 }
 

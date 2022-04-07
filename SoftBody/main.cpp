@@ -1,18 +1,8 @@
 #include "functions.h"
 
-sf::Vector2i testClick(std::vector<std::vector<massPoint>>& m, sf::RenderWindow& window) {
-	sf::Vector2f mP = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
-	for (int i = 0; i < m.size(); i++) {
-		for (int j = 0; j < m[i].size(); j++) {
-			if (pythag(mP - m[i][j].self.getPosition()) <= m[i][j].self.getRadius()) {
-				return sf::Vector2i(i, j);
-			}
-		}
-	}
 
-	return sf::Vector2i(-1, -1);
-}
-
+//To Do:
+//Maybe, maybe implement pressure based model
 
 int main() {
 
@@ -26,16 +16,19 @@ int main() {
 	float springConstant = 1000.0f;
 	float anchorLength = 20.0f;
 	float pointRadius = 6.67;
-	float g = 50.0f;
+	float g = 100.0f;
 	float pointMass = 1.0f;
+	float frictionConstant = 0.9f;
 
 	sf::Vector2f currPos(300.0f, 100.0f);
 
 	std::vector<std::vector<massPoint>> massPoints;
 	std::vector<spring> springs;
 
-	sf::Vector2i currClicked(-1, -1);
+	//Clicking
 	bool clicking = false;
+	bool stepping = true;
+	std::vector<std::vector<sf::Vector2f>> relPos;
 
 	//FPS Counter
 	sf::Text fps;
@@ -50,9 +43,13 @@ int main() {
 
 	for (int i = 0; i < h; i++) {
 		massPoints.push_back(std::vector<massPoint>());
+		relPos.push_back(std::vector<sf::Vector2f>());
+
 		for (int j = 0; j < w; j++) {
 			massPoints[i].push_back(massPoint(pointMass, g, pointRadius, currPos));
 			currPos.x += anchorLength;
+
+			relPos[i].push_back(sf::Vector2f());
 		}
 
 		currPos.x = 300.0f;
@@ -66,6 +63,8 @@ int main() {
 	std::vector<Obstacle> objects;
 	objects.push_back(Obstacle(sf::Vector2f(275.0f, 400.0f), sf::Vector2f(75.0f, 200.0f), 330.0f));
 	objects.push_back(Obstacle(sf::Vector2f(450.0f, 600.0f), sf::Vector2f(75.0f, 200.0f), 30.0f));
+	objects.push_back(Obstacle(sf::Vector2f(700.0f, 400.0f), sf::Vector2f(30.0f, 200.0f), -156.0f));
+	objects.push_back(Obstacle(sf::Vector2f(650.0f, 600.0f), sf::Vector2f(40.0f, 100.0f), 45.0f));
 		
 	//Delta Time
 
@@ -79,13 +78,23 @@ int main() {
 			case sf::Event::Closed:
 				window.close();
 				break;
-			case sf::Event::MouseButtonPressed:
-				clicking = true;
-				currClicked = testClick(massPoints, window);
+			case sf::Event::MouseButtonPressed: {
+
+				sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
+				clicking = mouseMove(massPoints, mousePos);
+				if (clicking) {
+					std::cout << "Clicked Rect" << std::endl;
+					for (int i = 0; i < massPoints.size(); i++) {
+						for (int j = 0; j < massPoints[i].size(); j++) {
+							relPos[i][j] = mousePos - massPoints[i][j].self.getPosition();
+						}
+					}
+					stepping = false;
+				}
 				break;
+			}
 			case sf::Event::MouseButtonReleased:
 				clicking = false;
-				currClicked = sf::Vector2i(-1, -1);
 				break;
 			case sf::Event::TextEntered:
 				if (evnt.text.unicode == 's') {
@@ -105,17 +114,26 @@ int main() {
 		fpsClock.restart();
 		fps.setString(std::to_string(1.0f / deltaClockT));
 
+		sf::Vector2f mousePos = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window));
 
-		if (clicking && currClicked.x != -1) {
-			massPoints[currClicked.x][currClicked.y].self.setPosition(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)));
+		if (clicking){
+			
+			for (int i = 0; i < massPoints.size(); i++) {
+				for (int j = 0; j < massPoints[i].size(); j++) {
+					sf::Vector2f d = mousePos - massPoints[i][j].self.getPosition();
+					massPoints[i][j].self.move(d - relPos[i][j]);
+				}
+			}
+			rectStep(springs, massPoints);
+		}
+		else{
+			step(springs, massPoints, objects, deltaTime, frictionConstant);
 		}
 		
-		step(springs, massPoints, objects, deltaTime);
 		
-	
+		window.clear(sf::Color(140, 140, 140));
 
-
-		window.clear(sf::Color::White);
+		for (auto& x : objects)x.draw(window);
 
 		for (auto x : springs)window.draw(x.self);
 
@@ -125,7 +143,6 @@ int main() {
 
 		window.draw(fps);
 
-		for (auto& x : objects)x.draw(window);
 
 		window.display();
 

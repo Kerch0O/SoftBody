@@ -6,7 +6,9 @@ spring::spring(massPoint &p11, massPoint &p21, sf::Vector2f pos, float d, float 
 {
 	self.setOrigin(1.5f, 0.0f);
 	self.setPosition(pos);
-	self.setFillColor(sf::Color(0, 0, 0, 150));
+	self.setOutlineColor(sf::Color::Black);
+	self.setOutlineThickness(1);
+	self.setFillColor(sf::Color(200, 200, 200));
 }
 
 void spring::rectRefresh(std::vector<std::vector<massPoint>> m) {
@@ -73,7 +75,6 @@ void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 	//F = ma, a = F/m
 	sf::Vector2f acceleration = (sf::Vector2f(F1.x, F1.y)) / p1.m;
 	p1.velocity += acceleration * dt;
-	p1.velocity.y += p1.g * dt;
 	p1.self.move(p1.velocity * dt);
 
 	
@@ -81,6 +82,5 @@ void spring::physics(std::vector<std::vector<massPoint>>& m, float dt) {
 	//Second point
 	acceleration = (sf::Vector2f(-F1.x, -F1.y)) / p2.m;
 	p2.velocity += acceleration * dt;
-	p2.velocity.y += p2.g * dt;
 	p2.self.move(p2.velocity * dt);
 }

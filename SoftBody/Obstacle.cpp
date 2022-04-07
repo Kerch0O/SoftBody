@@ -2,7 +2,7 @@
 
 Obstacle::Obstacle(sf::Vector2f pos, sf::Vector2f size, float r) 
 	: rot(r){
-	self.setFillColor(sf::Color(0, 0, 0, 0));
+	self.setFillColor(sf::Color(80, 80, 100));
 	self.setOutlineColor(sf::Color::Black);
 	self.setOrigin(size / 2.0f);
 	self.setSize(size);

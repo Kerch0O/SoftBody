@@ -1,39 +1,20 @@
 #include "functions.h"
 
-
-void vCout(sf::Vector2f v, std::string s) {
-	if (s.size() == 0) {
-		std::cout << v.x << " " << v.y << std::endl;
-	}
-	else {
-		std::cout << s << ": " << v.x << " " << v.y << std::endl;
-	}
-
-}
-float pythag(sf::Vector2f v) {
-	return sqrt(v.x * v.x + v.y * v.y);
-}
-
-void convAngle360(sf::Vector2f d, float& theta) {
-	theta = d.x > 0.0f && d.y > 0.0f ? theta + 90.0f : theta;
-	theta = d.x < 0.0f && d.y > 0.0f ? theta + 180.0f : theta;
-	theta = d.x < 0.0f && d.y < 0.0f ? theta + 270.0f : theta;
-}
-
-sf::Vector2f operator*(sf::Vector2f v, sf::Vector2f k) {
-	return sf::Vector2f(v.x * k.x, v.y * k.y);
-}
-
-
 void rectStep(std::vector<spring>& s, std::vector<std::vector<massPoint>>& m) {
 	for (auto& x : s)x.rectRefresh(m);
 }
 
 void physicsStep(std::vector<spring>& s, std::vector<std::vector<massPoint>>& m, float dt) {
 	for (auto& x : s)x.physics(m, dt);
+
+	for (auto& x : m){
+		for (auto& y : x) {
+			y.velocity.y += y.g * dt;
+		}
+	}
 }
 
-void collisionStep(std::vector<std::vector<massPoint>>& m, std::vector<Obstacle> &obstacles) {
+void collisionStep(std::vector<std::vector<massPoint>>& m, std::vector<Obstacle> &obstacles, float Fr) {
 	
 	
 	//Store reflections until after to actually reflect them
@@ -52,14 +33,14 @@ void collisionStep(std::vector<std::vector<massPoint>>& m, std::vector<Obstacle>
 
 	//This will check for collision with any surfaces or boundaries 
 	for (auto& x : m)
-		for (auto& y : x)boundaryPush(y, obstacles);
+		for (auto& y : x)boundaryPush(y, obstacles, Fr);
 }
 
 
 
-void step(std::vector<spring>& s, std::vector<std::vector<massPoint>>& m, std::vector<Obstacle> &obstacles, float dt) {
+void step(std::vector<spring>& s, std::vector<std::vector<massPoint>>& m, std::vector<Obstacle> &obstacles, float dt, float Fr) {
 	physicsStep(s, m, dt);
-	collisionStep(m, obstacles);
+	collisionStep(m, obstacles, Fr);
 	rectStep(s, m);
 }
 
@@ -125,10 +106,10 @@ void pushNormalR(massPoint& m1, massPoint& m2, std::vector<std::tuple<massPoint*
 	
 }
 
-void boundaryPush(massPoint& m1, std::vector<Obstacle>& obstacles) {
+void boundaryPush(massPoint& m1, std::vector<Obstacle>& obstacles, float Fr) {
 	//Check if outside boundaries
-	//Maybe some optimisations coukd be made here by just reversing velocities (check later)
 	//Move and change normal dependant on the collision
+	//Reflect off of the normal
 
 	sf::Vector2f n(0.0f, 0.0f);
 	bool collision = false;
@@ -163,6 +144,8 @@ void boundaryPush(massPoint& m1, std::vector<Obstacle>& obstacles) {
 		if (rectCollision(m1.self.getPosition(), x.self) && obstaclePointIntersect(x, m1, closestP)) {
 			//Run intersection step
 			//^This just checks for bounding box intersection and then does the obstaclePointIntersect() if it is inside
+			//Increases efficiency^
+
 			collision = true;
 
 			n = closestP - m1.self.getPosition();
@@ -170,12 +153,13 @@ void boundaryPush(massPoint& m1, std::vector<Obstacle>& obstacles) {
 			n = sf::Vector2f(cos(angle), sin(angle));
 
 			m1.self.setPosition(closestP);
-			std::cout << "Collision" << std::endl;
 		}
 	}
 
-	if (collision)
+	if (collision) {
 		m1.velocity = m1.velocity - 2.0f * n * (dot(m1.velocity, n) / pow(pythag(n), 2));
+		m1.velocity *= Fr;//Apply friction
+	}
 }
 
 bool obstaclePointIntersect(Obstacle& o, massPoint& m, sf::Vector2f& closest) {
@@ -207,9 +191,18 @@ bool obstaclePointIntersect(Obstacle& o, massPoint& m, sf::Vector2f& closest) {
 		}
 	}
 
-	return intersections == 1;//If the intersections are even, the point is outside, if odd, inside(this theory works in all situations, even with ones with holes), this is set to 1 because there are only quadrilaterals in this
+	return intersections == 1;//If the intersections are even, the point is outside, if odd, inside(this theory works in all situations, even with ones with holes), this is set to 1 because there are only quadrilaterals in this, and there is a certain nuisance which makes me do this(overlapping lines within sfml)
 }
 
+bool mouseMove(std::vector<std::vector<massPoint>>& m, sf::Vector2f mousePos) {
+
+	sf::Vector2f topLeft = m[0][0].self.getPosition();
+	sf::Vector2f topRight = m[0][m[0].size() - 1].self.getPosition();
+	sf::Vector2f bottomRight = m[m.size() - 1][m[0].size() - 1].self.getPosition();
+	sf::Vector2f bottomLeft = m[m.size() - 1][0].self.getPosition();
+
+	return rectCollision(mousePos, topLeft, topRight, bottomRight, bottomLeft);
+}
 
 float dot(sf::Vector2f v1, sf::Vector2f v2) {
 	return v1.x * v2.x + v1.y * v2.y;
@@ -255,5 +248,36 @@ bool rectCollision(sf::Vector2f p, sf::RectangleShape s) {
 		&& p.x < s.getGlobalBounds().left + s.getGlobalBounds().width
 		&& p.y > s.getGlobalBounds().top
 		&& p.y < s.getGlobalBounds().top + s.getGlobalBounds().height;
+}
+
+bool rectCollision(sf::Vector2f p, sf::Vector2f tl, sf::Vector2f tr, sf::Vector2f br, sf::Vector2f bl) {
+
+	return p.x > MIN(tl.x, br.x)
+		&& p.x < MAX(tl.x, br.x)
+		&& p.y < MAX(tl.y, br.y)
+		&& p.y > MIN(tl.y, br.y);
+}
+
+void vCout(sf::Vector2f v, std::string s) {
+	if (s.size() == 0) {
+		std::cout << v.x << " " << v.y << std::endl;
+	}
+	else {
+		std::cout << s << ": " << v.x << " " << v.y << std::endl;
+	}
+
+}
+float pythag(sf::Vector2f v) {
+	return sqrt(v.x * v.x + v.y * v.y);
+}
+
+void convAngle360(sf::Vector2f d, float& theta) {
+	theta = d.x > 0.0f && d.y > 0.0f ? theta + 90.0f : theta;
+	theta = d.x < 0.0f && d.y > 0.0f ? theta + 180.0f : theta;
+	theta = d.x < 0.0f && d.y < 0.0f ? theta + 270.0f : theta;
+}
+
+sf::Vector2f operator*(sf::Vector2f v, sf::Vector2f k) {
+	return sf::Vector2f(v.x * k.x, v.y * k.y);
 }
 
