@@ -30,6 +30,7 @@ bool rectCollision(sf::Vector2f p, sf::RectangleShape s);
 bool rectCollision(sf::Vector2f p, sf::Vector2f tl, sf::Vector2f tr, sf::Vector2f br, sf::Vector2f bl);
 bool mouseMove(std::vector<std::vector<massPoint>>& m, sf::Vector2f mousePos);
 bool circleCollision(sf::Vector2f p1, sf::Vector2f p2, float r);
+float lerp(float a, float b, float k);
 
 
 //Main Functions

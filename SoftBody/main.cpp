@@ -8,19 +8,26 @@ int main() {
 
 	sf::RenderWindow window(sf::VideoMode(1200, 800), "Soft Bodies", sf::Style::Default);
 
+	//Structure
 	int w = 5;
 	int h = 3;
 	int N = w * h;
 
+	//Spring
 	float damping = 10.0f;
 	float springConstant = 1000.0f;
 	float anchorLength = 20.0f;
+
+	//Mass point
 	float pointRadius = 6.67;
 	float g = 100.0f;
 	float pointMass = 1.0f;
-	float frictionConstant = 0.9f;
 
-	sf::Vector2f currPos(300.0f, 100.0f);
+	//Friction
+	float frictionConstant = 0.02f; //0.01 - > Ice, 0.05->grippy, 0.03->~stone, 0.02->metal
+
+
+	sf::Vector2f currPos(250.0f, 150.0f);
 
 	std::vector<std::vector<massPoint>> massPoints;
 	std::vector<spring> springs;
@@ -41,6 +48,7 @@ int main() {
 	fps.setString("");
 
 
+	//Creating massPoint structure
 	for (int i = 0; i < h; i++) {
 		massPoints.push_back(std::vector<massPoint>());
 		relPos.push_back(std::vector<sf::Vector2f>());
@@ -52,25 +60,26 @@ int main() {
 			relPos[i].push_back(sf::Vector2f());
 		}
 
-		currPos.x = 300.0f;
+		currPos.x = 250.0f;
 		currPos.y += anchorLength;
 	}
 
 
-	
+	//Creating springs
 	initialiseSprings(massPoints, springs, damping, springConstant, anchorLength);
 
+	//Obstacles
 	std::vector<Obstacle> objects;
-	objects.push_back(Obstacle(sf::Vector2f(275.0f, 400.0f), sf::Vector2f(75.0f, 200.0f), 330.0f));
+	objects.push_back(Obstacle(sf::Vector2f(225.0f, 400.0f), sf::Vector2f(75.0f, 200.0f), 330.0f));
 	objects.push_back(Obstacle(sf::Vector2f(450.0f, 600.0f), sf::Vector2f(75.0f, 200.0f), 30.0f));
 	objects.push_back(Obstacle(sf::Vector2f(700.0f, 400.0f), sf::Vector2f(30.0f, 200.0f), -156.0f));
 	objects.push_back(Obstacle(sf::Vector2f(650.0f, 600.0f), sf::Vector2f(40.0f, 100.0f), 45.0f));
 		
 	//Delta Time
-
 	sf::Clock fpsClock;
 	float deltaTime = 1.0f / 60.0f;
 
+	//Main Loop
 	while (window.isOpen()) {
 		sf::Event evnt;
 		while (window.pollEvent(evnt)) {

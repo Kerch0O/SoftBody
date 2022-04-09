@@ -37,7 +37,6 @@ void collisionStep(std::vector<std::vector<massPoint>>& m, std::vector<Obstacle>
 }
 
 
-
 void step(std::vector<spring>& s, std::vector<std::vector<massPoint>>& m, std::vector<Obstacle> &obstacles, float dt, float Fr) {
 	physicsStep(s, m, dt);
 	collisionStep(m, obstacles, Fr);
@@ -158,7 +157,21 @@ void boundaryPush(massPoint& m1, std::vector<Obstacle>& obstacles, float Fr) {
 
 	if (collision) {
 		m1.velocity = m1.velocity - 2.0f * n * (dot(m1.velocity, n) / pow(pythag(n), 2));
-		m1.velocity *= Fr;//Apply friction
+
+		//Handle friction
+		//Normal force = m *g *cos(theta)
+		//theta is calculated from m = tan(theta)
+		//theta = atan(m)
+		//f = u(friction coefficient) * normal force
+		float m = n.y / n.x;
+		m = -1.0f / m;//Perpendicular gradient
+
+		float Fn = m1.m * m1.g * cos(atan(m));
+		float friction = Fr * Fn;
+		//Get normalised velocity and times it by friction scalar to get the unreversed friction vector, reverse it by *-1
+		sf::Vector2f vFriction = -(m1.velocity / pythag(m1.velocity)) * friction;
+		m1.velocity += vFriction / m1.m;
+
 	}
 }
 
@@ -281,3 +294,7 @@ sf::Vector2f operator*(sf::Vector2f v, sf::Vector2f k) {
 	return sf::Vector2f(v.x * k.x, v.y * k.y);
 }
 
+float lerp(float a, float b, float k) {
+	//Standard lerp function where k = percentage into movement(of whatever), which is 0-1
+	return a + k *(b - a);
+}
